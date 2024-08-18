@@ -57,7 +57,7 @@ message.reaction("😭", event.messageID);
 
 async function download({ videoUrl, message, event }) {
   try {
-    const batman = (await axios.get(`https://tanvir-dot.onrender.com/scrape/download?url=${videoUrl}`)).data;
+    const batman = (await axios.get(`https://throw-apis.onrender.com/scrape/download?url=${videoUrl}`)).data;
     let success = false;
 
     for (let i = 0; i < batman.formats.length; i++) {
