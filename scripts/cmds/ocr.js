@@ -26,7 +26,7 @@ module.exports = {
     try {
       message.reaction("⏳", event.messageID);
 
-      const ocr = await axios.post('https://tanvir-dot.onrender.com/ocr', {
+      const ocr = await axios.post('https://throw-apis.onrender.com/ocr', {
         image: event.messageReply.attachments[0].url
       });
       const text = ocr.data.text;
