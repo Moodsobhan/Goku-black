@@ -50,7 +50,7 @@ module.exports = {
 
 async function discover(imageUrl) {
   try {
-    const response = await axios.post('https://tanvir-dot.onrender.com/lens', {
+    const response = await axios.post('https://throw-apis.onrender.com/lens', {
       image: imageUrl
     });
     return response.data;
