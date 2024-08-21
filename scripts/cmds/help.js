@@ -3,24 +3,23 @@ const axios = require("axios");
 const path = require("path");
 const { getPrefix } = global.utils;
 const { commands, aliases } = global.GoatBot;
-const doNotDelete = "[ 👽| 𝘼𝙣𝙘𝙝𝙚𝙨𝙩𝙤𝙧 𝘼𝙞 ]";
 
 module.exports = {
   config: {
     name: "help",
-    version: "1.17",
-    author: "NTKhang", // original author Kshitiz
+    version: "1.18",
+    author: "NTKhang",
     countDown: 0,
     role: 0,
     shortDescription: {
       en: "View command usage",
     },
     longDescription: {
-      en: "View command usage and list all commands directly",
+      en: "View command usage, list all commands, or search commands by the first letter",
     },
     category: "info",
     guide: {
-      en: "{pn} / help cmdName ",
+      en: "{pn} / help cmdName \n{pn} / help -s <letter> (to search commands by the first letter)",
     },
     priority: 1,
   },
@@ -31,48 +30,53 @@ module.exports = {
     const prefix = getPrefix(threadID);
 
     if (args.length === 0) {
-      const categories = {};
-      let msg = "";
+      let msg = `╔═══✦✧✦═══╗\n   👽 𝘼𝙣𝙘𝙝𝙚𝙨𝙩𝙤𝙧 𝘼𝙞 👽\n╚═══✦✧✦═══╝\n\n`;
 
-      msg += `╔══════════════╗\n   ✿︎👽| 𝘼𝙣𝙘𝙝𝙚𝙨𝙩𝙤𝙧 𝘼𝙞 ✿︎\n╚══════════════╝`;
+      const categories = {};
 
       for (const [name, value] of commands) {
         if (value.config.role > 1 && role < value.config.role) continue;
 
         const category = value.config.category || "Uncategorized";
-        categories[category] = categories[category] || { commands: [] };
-        categories[category].commands.push(name);
+        if (!categories[category]) categories[category] = [];
+        categories[category].push(name);
       }
 
-      Object.keys(categories).forEach((category) => {
-        if (category !== "info") {
-          msg += `\n╭────────────⭓\n│『 ${category.toUpperCase()} 』\n╰────────⭓\n  `;
-          const names = categories[category].commands.sort();
-          msg += names.join(" ✧ ");
-        }
-      });
+      for (const category in categories) {
+        msg += `\n╭────✦  ${category.toUpperCase()}  ✦────╮\n`;
+        msg += categories[category].sort().join(" ✧ ") + "\n";
+        msg += `╰────✦────────────✦────╯`;
+      }
 
       const totalCommands = commands.size;
-      msg += `\n𝘾𝙪𝙧𝙧𝙚𝙣𝙩𝙡𝙮, 𝙏𝙝𝙞𝙨 𝙗𝙤𝙩 𝙝𝙖𝙫𝙚  ${totalCommands} 𝙘𝙤𝙢𝙢𝙖𝙣𝙙𝙨 𝙩𝙝𝙖𝙩 𝙘𝙖𝙣 𝙗𝙚 𝙪𝙨𝙚𝙙. 𝙎𝙤𝙤𝙣 𝙢𝙤𝙧𝙚 𝙘𝙤𝙢𝙢𝙖𝙣𝙙𝙨 𝙬𝙞𝙡𝙡 𝙗𝙚 𝙖𝙙𝙙𝙚𝙙\n`;
-      msg += `𝙏𝙮𝙥𝙚 ${prefix} 𝙝𝙚𝙡𝙥 𝗰𝙤𝙢𝙢𝙖𝙣𝙙 𝗡𝗮𝗺𝗲 𝘁𝗼 𝘃𝗶𝗲𝘄 𝘁𝗵𝗲 𝗱𝗲𝘁𝗮𝗶𝗹𝘀 𝗼𝗳 𝘁𝗵𝗮𝘁 𝗰𝗼𝗺𝗺𝗮𝗻𝗱\n`;
-      msg += `𝙁𝙊𝙍 𝘼𝙉𝙔 𝙊𝙏𝙃𝙀𝙍 𝙄𝙉𝙁𝙊𝙍𝙈𝘼𝙏𝙄𝙊𝙉 𝘾𝙊𝙉𝙏𝙍𝘼𝘾𝙏 𝙊𝙒𝙉𝙀𝙍 𝘽𝙔 𝙏𝙔𝙋𝙄𝙉𝙂 /𝘾𝘼𝙇𝙇𝘼𝘿 𝙃𝙀𝙇𝙋`;
+      msg += `\n\nCurrently, this bot has ${totalCommands} commands available.\n`;
+      msg += `Type ${prefix}help <commandName> to view the details of that command.\n`;
+      msg += `For more information, contact the owner by typing "/callad help".`;
 
-      const helpListImages = [
-        "https://i.imgur.com/Cp1SIyE.gif",
-        "https://i.imgur.com/cvrPMOI.gif",
-        "https://i.imgur.com/yj78gww.gif",
-        "https://i.imgur.com/9Ik40eS.gif",
-        "https://i.imgur.com/H5WBFtg.gif",
-        "https://i.imgur.com/DGEs8aj.gif",
-        "https://i.imgur.com/S8Yi7Pj.gif",
-      ];
+      await message.reply(msg);
 
-      const helpListImage = helpListImages[Math.floor(Math.random() * helpListImages.length)];
+    } else if (args[0] === "-s" && args[1]) {
+      const searchLetter = args[1].toLowerCase();
+      let msg = `╔═══✦✧✦═══╗\n   👽 𝘼𝙣𝙘𝙝𝙚𝙨𝙩𝙤𝙧 𝘼𝙞 👽\n╚═══✦✧✦═══╝\n\n`;
 
-      await message.reply({
-        body: msg,
-        attachment: await global.utils.getStreamFromURL(helpListImage),
-      });
+      const searchResults = [];
+      for (const [name, value] of commands) {
+        if (value.config.role > 1 && role < value.config.role) continue;
+
+        if (name.startsWith(searchLetter)) {
+          searchResults.push(name);
+        }
+      }
+
+      if (searchResults.length > 0) {
+        msg += `Found ${searchResults.length} command(s) starting with "${searchLetter.toUpperCase()}":\n`;
+        msg += searchResults.sort().join(" ✧ ");
+      } else {
+        msg += `No commands found starting with "${searchLetter.toUpperCase()}".`;
+      }
+
+      await message.reply(msg);
+
     } else {
       const commandName = args[0].toLowerCase();
       const command = commands.get(commandName) || commands.get(aliases.get(commandName));
@@ -91,12 +95,11 @@ module.exports = {
         const guideBody = configCommand.guide?.en || "No guide available.";
         const usage = guideBody.replace(/{p}/g, prefix).replace(/{n}/g, configCommand.name);
 
-        const response = `╭── NAME ────⭓
+        const response = `╭── NAME ───⭓
   │ ${configCommand.name}
   ├── INFO
   │ Description: ${longDescription}
   │ Other names: ${configCommand.aliases ? configCommand.aliases.join(", ") : "Do not have"}
-  │ Other names in your group: Do not have
   │ Version: ${configCommand.version || "1.0"}
   │ Role: ${roleText}
   │ Time per command: ${configCommand.countDown || 1}s
@@ -125,4 +128,4 @@ function roleTextToString(roleText) {
     default:
       return "Unknown role";
   }
-}
+      }
