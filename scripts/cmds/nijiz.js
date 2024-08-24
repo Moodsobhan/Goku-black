@@ -50,7 +50,7 @@ module.exports = {
                 prompt = args.join(" ");
             }
 
-            const apiUrl = `https://api-rehatdesu.onrender.com/api/imagine/nijiv2?prompt=${encodeURIComponent(prompt)}&preset=${encodeURIComponent(preset)}&style=${encodeURIComponent(style)}&aspectRatio=${encodeURIComponent(aspectRatio)}&apikey=gaysex`;
+            const apiUrl = `https://api-rehatdesu.onrender.com/api/imagine/nijiv2?prompt=${encodeURIComponent(prompt)}&preset=${encodeURIComponent(preset)}&style=${encodeURIComponent(style)}&aspectRatio=${encodeURIComponent(aspectRatio)}&apikey=sumu`;
             const processingMessage = await message.reply("Please wait...⏳");
             const response = await axios.post(apiUrl);
             const img = response.data.url;
