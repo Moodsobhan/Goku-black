@@ -52,7 +52,7 @@ module.exports = {
             }
 
             
-            let apiUrl = `https://rehatdesu.xyz/api/imagine/niji?prompt=${encodeURIComponent(prompt)}.&aspectRatio=${aspectRatio}&style=${style}&preset=${preset}&apikey=gaysex`;
+            let apiUrl = `https://rehatdesu.xyz/api/imagine/niji?prompt=${encodeURIComponent(prompt)}.&aspectRatio=${aspectRatio}&style=${style}&preset=${preset}&apikey=sumu`;
             if (imageUrl) {
                 apiUrl += `&imageUrl=${imageUrl}`;
             }
