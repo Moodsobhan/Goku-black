@@ -23,7 +23,7 @@ module.exports = {
   onStart: async function ({ message, event, usersData, threadsData, api }) {
     // Anti-Author Change Check
     if (this.config.author !== 'Mahi--') {
-      return message.reply("⚠️ Unauthorized author change detected. Command execution stopped.");
+      return message.reply("⚠ Unauthorized author change detected. Command execution stopped.");
     }
 
     const startTime = Date.now();
@@ -62,7 +62,10 @@ module.exports = {
       const endTime = Date.now();
       const botPing = endTime - startTime;
 
-      // Create the initial message content with system stats and media check placeholder
+      // Calculate total messages processed
+      const totalMessages = users.reduce((sum, user) => sum + (user.messageCount || 0), 0);
+
+      // Create the initial message content with system stats, bot activity, and media check placeholder
       const initialMessageContent = `🖥 ${bold("System Statistics")}:\n\n` +
         `• Uptime: ${days}d ${hours}h ${minutes}m ${seconds}s\n` +
         `• Memory Usage: ${(memoryUsage.rss / 1024 / 1024).toFixed(2)} MB\n` +
@@ -76,7 +79,10 @@ module.exports = {
         `• CPU Model: ${cpuModel}\n` +
         `• Node.js Version: ${nodeVersion}\n` +
         `• Platform: ${platform}\n` +
-        `• Ping: ${botPing}ms\n• Total Users: ${users.length}\n• Total Groups: ${groups.length}\n\n` +
+        `• Ping: ${botPing}ms\n` +
+        `• Total Users: ${users.length}\n` +
+        `• Total Groups: ${groups.length}\n` +
+        `• Messages Processed: ${totalMessages}\n\n` +
         `🌐 ${bold("Network Interfaces")}:\n\n` +
         `${networkInfo.map(info => `• ${info.interface}: ${info.addresses.join(', ')}`).join('\n')}\n\n` +
         `🔄 ${thin("𝖢𝗁𝖾𝖼𝗄𝗂𝗇𝗀 𝗆𝖾𝖽𝗂𝖺 𝖻𝖺𝗇 𝗌𝗍𝖺𝗍𝗎𝗌...")}`;
@@ -84,16 +90,19 @@ module.exports = {
       // Send the initial message
       const sentMessage = await message.reply(initialMessageContent);
 
+      // Uptime-dependent response
+      const uptimeResponse = uptime > 86400 ? "I've been running for quite a while now! 💪" : "Just getting started! 😎";
+
       // Delay the media ban check
       setTimeout(async () => {
         try {
           const mediaBan = await threadsData.get(event.threadID, 'mediaBan') || false;
           const mediaBanStatus = mediaBan ? '🚫 Media is currently banned in this chat.' : '✅ Media is not banned in this chat.';
           
-          // Combine system stats and media ban status
-          const updatedMessageContent = `${initialMessageContent.replace(`🔄 ${thin("𝖢𝗁𝖾𝖼𝗄𝗂𝗇𝗀 𝗆𝖾𝖽𝗂𝖺 𝖻𝖺𝗇 𝗌𝗍𝖺𝗍𝗎𝗌...")}`, mediaBanStatus)}`;
+          // Combine system stats, bot activity, media ban status, and uptime-dependent response
+          const updatedMessageContent = `${initialMessageContent.replace(`🔄 ${thin("𝖢𝗁𝖾𝖼𝗄𝗂𝗇𝗀 𝗆𝖾𝖽𝗂𝖺 𝖻𝖺𝗇 𝗌𝗍𝖺𝗍𝗎𝗌...")}`, `${mediaBanStatus}\n\n${uptimeResponse}`)}`;
           
-          // Edit the message to include media ban status
+          // Edit the message to include media ban status and uptime-dependent response
           return api.editMessage(thin(updatedMessageContent), sentMessage.messageID);
         } catch (err) {
           console.error(err);
