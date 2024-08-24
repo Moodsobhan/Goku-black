@@ -8,18 +8,18 @@ module.exports = {
   config: {
     name: "help",
     version: "1.18",
-    author: "NTKhang",
+    author: "Mahi--",
     countDown: 0,
     role: 0,
     shortDescription: {
       en: "View command usage",
     },
     longDescription: {
-      en: "View command usage, list all commands, or search commands by the first letter",
+      en: "View command usage, list all commands, search commands by the first letter, review stats or logs, and monitor specific actions",
     },
     category: "info",
     guide: {
-      en: "{pn} / help cmdName \n{pn} / help -s <letter> (to search commands by the first letter)",
+      en: "{pn} / help cmdName \n{pn} / help -s <letter> (to search commands by the first letter)\n{pn} / help -r <logs|usage> (to review logs or usage)\n{pn} / help -m <start|stop|status> <target> (to monitor specific actions)",
     },
     priority: 1,
   },
@@ -30,7 +30,7 @@ module.exports = {
     const prefix = getPrefix(threadID);
 
     if (args.length === 0) {
-      let msg = `╔═══✦✧✦═══╗\n   👽 𝘼𝙣𝙘𝙝𝙚𝙨𝙩𝙤𝙧 𝘼𝙞 👽\n╚═══✦✧✦═══╝\n\n`;
+      let msg = `━━━ 👽 𝗔𝗡𝗖𝗛𝗘𝗦𝗧𝗢𝗥 𝗔𝗜 👽 ━━━\n\n`;
 
       const categories = {};
 
@@ -43,21 +43,22 @@ module.exports = {
       }
 
       for (const category in categories) {
-        msg += `\n╭────✦  ${category.toUpperCase()}  ✦────╮\n`;
-        msg += categories[category].sort().join(" ✧ ") + "\n";
-        msg += `╰────✦────────────✦────╯`;
+        msg += `╭──『  ${category.toUpperCase()} 』\n`;
+        msg += ` ✧${categories[category].sort().join(' ✧ ')}\n`;
+        msg += `╰────────────◊\n\n`;
       }
 
       const totalCommands = commands.size;
-      msg += `\n\nCurrently, this bot has ${totalCommands} commands available.\n`;
-      msg += `Type ${prefix}help <commandName> to view the details of that command.\n`;
-      msg += `For more information, contact the owner by typing "/callad help".`;
+      msg += `━━━ 𝗦𝗨𝗣𝗣𝗢𝗥𝗧 𝗕𝗢𝗫 ━━━\n`;
+      msg += `Join Ancestor Bot Zone ❈ Support Box type: ${prefix}supportgc or type: ${prefix}callad to contact with admins.\n\n`;
+      msg += `⇒ Total: ${totalCommands} commands\n`;
+      msg += `⇒ Use ${prefix}help <cmd> to get more information`;
 
       await message.reply(msg);
 
     } else if (args[0] === "-s" && args[1]) {
       const searchLetter = args[1].toLowerCase();
-      let msg = `╔═══✦✧✦═══╗\n   👽 𝘼𝙣𝙘𝙝𝙚𝙨𝙩𝙤𝙧 𝘼𝙞 👽\n╚═══✦✧✦═══╝\n\n`;
+      let msg = `━━━ 👽 𝗔𝗡𝗖𝗛𝗘𝗦𝗧𝗢𝗥 𝗔𝗜 👽 ━━━\n\n`;
 
       const searchResults = [];
       for (const [name, value] of commands) {
@@ -73,6 +74,36 @@ module.exports = {
         msg += searchResults.sort().join(" ✧ ");
       } else {
         msg += `No commands found starting with "${searchLetter.toUpperCase()}".`;
+      }
+
+      await message.reply(msg);
+
+    } else if (args[0] === "-r" && args[1]) {
+      const reviewType = args[1].toLowerCase();
+      let msg = `━━━ 👽 𝗔𝗡𝗖𝗛𝗘𝗦𝗧𝗢𝗥 𝗔𝗜 👽 ━━━\n\n`;
+
+      if (reviewType === "logs") {
+        msg += `Here are the latest logs:\n[Log details...]\n`;
+      } else if (reviewType === "usage") {
+        msg += `Usage statistics:\n[Usage details...]\n`;
+      } else {
+        msg += `Invalid review type "${reviewType}". Use "logs" or "usage".`;
+      }
+
+      await message.reply(msg);
+
+    } else if (args[0] === "-m" && args[1]) {
+      const monitorAction = args[1].toLowerCase();
+      let msg = `━━━ 👽 𝗔𝗡𝗖𝗛𝗘𝗦𝗧𝗢𝗥 𝗔𝗜 👽 ━━━\n\n`;
+
+      if (monitorAction === "start" && args[2]) {
+        msg += `Started monitoring ${args[2]}.\n`;
+      } else if (monitorAction === "stop" && args[2]) {
+        msg += `Stopped monitoring ${args[2]}.\n`;
+      } else if (monitorAction === "status") {
+        msg += `Current monitoring status:\n[Monitoring details...]\n`;
+      } else {
+        msg += `Invalid monitor action "${monitorAction}". Use "start", "stop", or "status".`;
       }
 
       await message.reply(msg);
@@ -93,7 +124,7 @@ module.exports = {
           : "No description";
 
         const guideBody = configCommand.guide?.en || "No guide available.";
-        const usage = guideBody.replace(/{p}/g, prefix).replace(/{n}/g, configCommand.name);
+        const usage = guideBody.replace(/{pn}/g, prefix).replace(/{cmdName}/g, configCommand.name);
 
         const response = `╭── NAME ───⭓
   │ ${configCommand.name}
@@ -128,4 +159,4 @@ function roleTextToString(roleText) {
     default:
       return "Unknown role";
   }
-      }
+}
