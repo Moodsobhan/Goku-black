@@ -220,12 +220,20 @@ module.exports = {
         break;
 
       default:
-        api.sendMessage("Invalid command. Please use the following commands:\n" +
-          "{p}ancestor video [query] - To handle videos\n" +
-          "{p}ancestor tempmail gen - To generate a temporary email\n" +
-          "{p}ancestor tempmail [email] - To fetch messages from a temporary email\n" +
-          "{p}ancestor gen [prompt] - To generate an image based on a prompt\n" +
-          "{p}ancestor gpt [prompt] - To get a GPT response\n", event.threadID, event.messageID);
+  api.sendMessage(
+    `Prompt Instructions to get a Specific Response\n\n` +
+    `╭───Media\n` +
+    `│1. {p}ancestor video [query] - To handle videos\n` +
+    `│2. {p}ancestor tempmail gen - To generate a temporary email\n` +
+    `│3. {p}ancestor tempmail [email] - To fetch messages from a temporary email\n` +
+    `│4. {p}ancestor gen [prompt] - To generate an image based on a prompt\n` +
+    `│5. {p}ancestor gpt [prompt] - To get a GPT response\n` +
+    `╰─────────────🏵\n\n` +
+    `example: {p}ancestor video cool song\n\n` +
+    `I'll add more soon. This is beta only.`,
+    event.threadID,
+    event.messageID
+  );
     }
   }
 };
