@@ -34,7 +34,11 @@ module.exports = {
           `17. duchaiten-pony-xl\n` +
           `18. lcm-dreamshaper-v7\n` +
           `19. midjourney-mimic\n` +
-          `20. cyberpunk-anime-diffusion`
+          `20. cyberpunk-anime-diffusion\n` +
+          `21. sdxl-turbo\n` +
+          `22. flux-cinestill\n` +
+          `23. stable-diffusion-2-1\n` +
+          `24. flux-film-foto`
     },
   },
   onStart: async function ({ message, args, api, event }) {
@@ -63,7 +67,11 @@ module.exports = {
       "duchaiten-pony-xl",
       "lcm-dreamshaper-v7",
       "midjourney-mimic",
-      "cyberpunk-anime-diffusion"
+      "cyberpunk-anime-diffusion",
+      "sdxl-turbo",
+      "flux-cinestill",
+      "stable-diffusion-2-1",
+      "flux-film-foto"
     ];
 
     if (args[0] && args[0].toLowerCase() === "models") {
