@@ -1,56 +1,41 @@
 const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
+const dip = "https://www.noobs-api.000.pe/dipto"
+module.exports.config = {
+  name: "Nijix",
+  version: "2.0",
+  role: 2,
+  author: "Dipto",
+  description:{en: "Sdxl 3.1 Image Generator"},
+  category: "Image gen",
+  guide: "{pn} [prompt] --ratio 1:1\n{pn} [prompt]",
+  countDown: 15,
+};
 
-module.exports = {
-  config: {
-    name: "hiji",
-    aliases: [],
-    author: "Mahi--",
-    version: "1.0",
-    cooldowns: 20,
-    role: 0,
-    shortDescription: "Generate an image using Hiji API.",
-    longDescription: "Generates an image based on the provided prompt using the Hiji API.",
-    category: "fun",
-    guide: {
-      en: "{p}hiji <prompt>"
-    }
-  },
-  onStart: async function ({ message, args, api, event }) {
-    // Obfuscated author name check
-    const checkAuthor = Buffer.from('TWFoaS0t', 'base64').toString('utf8');
-    if (this.config.author !== checkAuthor) {
-      return api.sendMessage("You are not authorized to change the author name.", event.threadID, event.messageID);
-    }
-
-    if (args.length === 0) {
-      return api.sendMessage("❌ | Please provide a prompt.", event.threadID, event.messageID);
-    }
-
-    const prompt = args.join(" ");
-    const hijiApiUrl = `https://upoldev-apihub.onrender.com/upol/horny-niji?prompt=${encodeURIComponent(prompt)}&apikey=UPoLGitDev69`;
-
-    api.sendMessage("⏳ | Please wait, we're making your picture.", event.threadID, event.messageID);
-
-    try {
-      const hijiResponse = await axios.get(hijiApiUrl, { responseType: "arraybuffer" });
-
-      const cacheFolderPath = path.join(__dirname, "/cache");
-      if (!fs.existsSync(cacheFolderPath)) {
-        fs.mkdirSync(cacheFolderPath);
-      }
-      const imagePath = path.join(cacheFolderPath, `${Date.now()}_generated_image.png`);
-      fs.writeFileSync(imagePath, Buffer.from(hijiResponse.data, "binary"));
-
-      const stream = fs.createReadStream(imagePath);
-      message.reply({
-        body: "",
-        attachment: stream
+module.exports.onStart = async ({ message, event, args, api }) => {
+  try {
+  const prompt = args.join(" ");
+  let prompt2, ratio = "1:1";
+  if (prompt.includes("--ratio")) {
+    const parts = prompt.split("--ratio");
+    prompt2 = parts[0].trim();
+    ratio = parts[1].trim();
+  } else {
+    prompt2 = prompt;
+    ratio = "1:1";
+  }
+    const ok = message.reply('wait baby <😘')
+    api.setMessageReaction("⌛", event.messageID, (err) => {}, true);
+    const { data } = await axios.get(
+      `${dip}/xl31?prompt=${prompt2}&ratio=${encodeURIComponent(ratio)}`
+    );
+    api.setMessageReaction("✅", event.messageID, (err) => {}, true);
+     message.unsend(ok.messageID)
+    await message.reply({
+          body: `Here's your image`, 
+          attachment: await global.utils.getStreamFromURL(data.data) 
       });
-    } catch (error) {
-      console.error("Error details:", error);
-      message.reply(`❌ | An error occurred: ${error.message}. Please try again later.`);
-    }
+  } catch (e) {
+    console.log(e);
+    message.reply("Error: " + e.message);
   }
 };
