@@ -1,48 +1,32 @@
 const axios = require('axios');
-
-module.exports = {
-  config: {
+const baseApiUrl = async () => {
+  const base = await axios.get(
+    `https://raw.githubusercontent.com/Blankid018/D1PT0/main/baseApiUrl.json`,
+  );
+  return base.data.api;
+};
+module.exports.config ={
     name: "p",
-    version: "1.0",
-    author: "JARiF",
+    version: "6.9",
+    author: "dipto",
     countDown: 5,
     role: 0,
-    longDescription: {
-      vi: "",
-      en: "Get midjourney prompts."
-    },
-    category: "AI"
+    category: "media",
+    description: " image to prompt",
+    category: "tools",
+    usages: "reply [image]"
   },
-  onStart: async function ({ message, event, args, api }) {
-    try {
-      const khankirChele = args.join(" ");
-      let imageUrl;
 
-      if (event.type === "message_reply") {
-        if (["photo", "sticker"].includes(event.messageReply.attachments[0]?.type)) {
-          imageUrl = event.messageReply.attachments[0].url;
-        } else {
-          return api.sendMessage({ body: "❌ | Reply must be an image." }, event.threadID);
-        }
-      } else if (args[0]?.match(/(https?:\/\/.*\.(?:png|jpg|jpeg))/g)) {
-        imageUrl = args[0];
-      } else if (!khankirChele) {
-        return api.sendMessage({ body: "❌ | Reply to an image or provide a prompt." }, event.threadID);
-      }
-
-      if (imageUrl) {
-        const response = await axios.get(`https://www.api.vyturex.com/describe?url=${encodeURIComponent(imageUrl)}`);
-        const description = response.data;
-
-        await message.reply(description);
-      } else if (khankirChele) {
-        const response = await axios.get(`https://www.api.vyturex.com/promptgen?content=${encodeURIComponent(khankirChele)}`);
-        const prompt = response.data;
-
-        await message.reply(prompt);
-      }
-    } catch (error) {
-     message.reply(`${error}`);
+module.exports.onStart = async ({ api, event,args }) =>{
+    const dip = event.messageReply?.attachments[0]?.url || args.join(' ');
+    if (!dip) {
+      return api.sendMessage('Please reply to an image.', event.threadID, event.messageID);
     }
-  }
-};
+    try {
+      const prom = (await axios.get(`${await baseApiUrl()}/prompt?url=${encodeURIComponent(dip)}`)).data.data[0].response;
+         api.sendMessage(prom, event.threadID, event.messageID);
+    } catch (error) {
+      console.error(error);
+      return api.sendMessage('Failed to convert image into text.', event.threadID, event.messageID);
+    }
+  };
