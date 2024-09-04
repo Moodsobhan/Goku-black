@@ -19,7 +19,7 @@ module.exports = {
       let url = args.join(" ");
       if (!url) return message.reply("Please provide a URL to download the video.");
 
-      const batman = (await axios.get(`https://tanvir-dot.onrender.com/scrape/download?url=${url}`)).data;
+      const batman = (await axios.get(`https://throw-apis.onrender.com/scrape/download?url=${url}`)).data;
 
       let headers = batman.formats[0].headers;
 
