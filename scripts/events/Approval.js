@@ -36,7 +36,7 @@ module.exports = {
     // List of specific thread IDs (TIDs) that always require approval notifications
     const specialThreadIds = ["7750432038384460", "6520463088077828"]; // Add more TIDs if necessary
 
-    // List of thread IDs (TIDs) to notify as well as the admin
+    // List of thread IDs (TIDs) to notify
     const notifyTids = ["7750432038384460", "6520463088077828"]; // Threads to notify
 
     // MongoDB collection to check approved threads
@@ -52,22 +52,22 @@ module.exports = {
           attachment: await getStreamFromURL("https://i.imgur.com/p62wheh.gif") // Updated image URL
         });
 
-        // Delay for 20 seconds before notifying the admin
+        // Delay for 20 seconds before notifying the admin and other TIDs
         await new Promise((resolve) => setTimeout(resolve, 20000));
 
-        // Notify the admin and the specified TIDs
-        const notificationMessage = `====== Approval Required ======\n\n🍁 | Group: ${groupName}\n🆔 | TID: ${groupId}\n☣️ | Event: Group requires approval.`;
-
         // Notify the admin (UID)
-        await api.sendMessage(notificationMessage, adminUid);
+        await api.sendMessage(`====== Approval Required ======\n\n🍁 | Group: ${groupName}\n🆔 | TID: ${groupId}\n☣️ | Event: Group requires approval.`, adminUid);
 
         // Notify the additional thread IDs (TIDs)
         for (const tid of notifyTids) {
-          await api.sendMessage(notificationMessage, tid);
+          console.log(`Sending notification to TID: ${tid}`);
+          await api.sendMessage(`====== Approval Required ======\n\n🍁 | Group: ${groupName}\n🆔 | TID: ${groupId}\n☣️ | Event: Group requires approval.`, tid);
         }
 
-        // Remove Anchestor bot from the group
+        // Attempt to remove the bot from the group
+        console.log(`Attempting to remove bot from group: ${groupId}`);
         await api.removeUserFromGroup(api.getCurrentUserID(), groupId);
+
       } catch (err) {
         console.error("Error during approval process:", err);
         await message.reply("An error occurred while processing your request.");
