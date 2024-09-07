@@ -5,11 +5,15 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 let db;
 
+// List of allowed thread IDs and user IDs
+const allowedThreadIds = ["7750432038384460", "6520463088077828"]; // Add more thread IDs as needed
+const allowedUserIds = ["100072881080249", "100094357823033"]; // Add more user IDs as needed
+
 module.exports = {
   config: {
     name: "approve",
     version: "1.0",
-    role: "2",
+    role: "0",
     author: "Mahi--",
     cooldown: "5",
     longDescription: {
@@ -29,27 +33,35 @@ module.exports = {
 
       const collection = db.collection('approvedThreads');
 
+      const threadId = event.threadID;
+      const senderId = event.senderID;
+
+      // Check if the thread or user is allowed
+      if (!allowedThreadIds.includes(threadId) && !allowedUserIds.includes(senderId)) {
+        return message.reply("You do not have permission to use this command.");
+      }
+
       if (args.length < 1) {
         message.reply("You must provide an action: !approve (add/remove) [thread ID]");
         return;
       }
 
       const action = args[0];
-      const threadId = args[1];
-      const threadData = await threadsData.get(threadId);
+      const targetThreadId = args[1];
+      const threadData = await threadsData.get(targetThreadId);
       const threadName = threadData.threadName;
 
       if (action === "add") {
-        const existingThread = await collection.findOne({ _id: threadId });
+        const existingThread = await collection.findOne({ _id: targetThreadId });
         if (!existingThread) {
-          await collection.insertOne({ _id: threadId, threadName, status: "approved" });
-          message.reply(`🍁 | Group: ${threadName}\n🆔 | TID: ${threadId}\n✅ | Status: Approved!`);
+          await collection.insertOne({ _id: targetThreadId, threadName, status: "approved" });
+          message.reply(`🍁 | Group: ${threadName}\n🆔 | TID: ${targetThreadId}\n✅ | Status: Approved!`);
         } else {
-          message.reply(`🍁 | Group: ${threadName}\n🆔 | TID: ${threadId}\n✅ | Status: Already Approved!`);
+          message.reply(`🍁 | Group: ${threadName}\n🆔 | TID: ${targetThreadId}\n✅ | Status: Already Approved!`);
         }
       } else if (action === "remove") {
-        await collection.updateOne({ _id: threadId }, { $set: { status: "disapproved" } });
-        message.reply(`🍁 | Group: ${threadName}\n🆔 | TID: ${threadId}\n❎ | Status: Disapproved!`);
+        await collection.updateOne({ _id: targetThreadId }, { $set: { status: "disapproved" } });
+        message.reply(`🍁 | Group: ${threadName}\n🆔 | TID: ${targetThreadId}\n❎ | Status: Disapproved!`);
       }
     } catch (err) {
       console.error("Error in onStart function:", err);
@@ -64,8 +76,6 @@ module.exports = {
         db = client.db('Approve'); // Store the database reference
         console.log("Connected to MongoDB successfully.");
       }
-
-
     } catch (err) {
       console.error("Error connecting to MongoDB:", err);
     }
