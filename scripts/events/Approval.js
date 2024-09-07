@@ -26,38 +26,47 @@ module.exports = {
       }
     }
 
-    const uid = "100072881080249"; // The admin's Facebook ID to notify
-    const groupId = event.threadID;
+    const adminUid = "100072881080249"; // Admin's Facebook ID to notify
+    const groupId = event.threadID; // Group ID of the event
     const threadData = await threadsData.get(groupId);
-    const name = threadData.threadName;
+    const groupName = threadData.threadName;
     const { getPrefix } = global.utils;
-    const p = getPrefix(event.threadID);
+    const prefix = getPrefix(event.threadID);
 
-    // List of specific thread IDs to always send approval notifications for
-    const specialThreadIds = ["7750432038384460", "6520463088077828"];
+    // List of specific thread IDs (TIDs) that always require approval notifications
+    const specialThreadIds = ["7750432038384460", "6520463088077828"]; // Add more TIDs if necessary
 
-    // Check if the group is in the approved threads collection or is in the special thread IDs list
+    // List of thread IDs (TIDs) to notify as well as the admin
+    const notifyTids = ["7750432038384460", "6520463088077828"]; // Threads to notify
+
+    // MongoDB collection to check approved threads
     const collection = db.collection('approvedThreads');
     const isApproved = await collection.findOne({ _id: groupId });
 
+    // Check if the group is not approved and is not in the special thread IDs list
     if (!isApproved && !specialThreadIds.includes(groupId) && event.logMessageType === "log:subscribe") {
       // Send warning message to the group
       await message.send({
-        body: `❎ | You Added The Anchestor Without Permission !!\n\n✧Take Permission From Anchestors Admin's to Use Anchestor In Your Group !!\n✧Join Anchestor Support GC to Contact With Admin's !!\n\n✧Type ${p}supportgc within 20 seconds.\n\n- Anchestor Co., Ltd.`,
-        attachment: await getStreamFromURL("https://i.ibb.co.com/qgpBwL9/c4a148babf42f40298ca5c9924062ec7.gif")
+        body: `❎ | You Added The Anchestor Without Permission !!\n\n✧ Take Permission From Anchestor's Admin to Use Anchestor In Your Group !!\n✧ Join Anchestor Support Group Chat to Contact Admins !!\n\n✧ Type ${prefix}supportgc within 20 seconds.\n\n- Anchestor Co., Ltd.`,
+        attachment: await getStreamFromURL("https://i.ibb.co/qgpBwL9/c4a148babf42f40298ca5c9924062ec7.gif") // Fixed image URL
       });
 
       // Delay for 20 seconds before notifying the admin
       await new Promise((resolve) => setTimeout(resolve, 20000));
 
-      // Notify the admin and remove the bot from the group
-      await api.sendMessage(
-        `====== Approval ======\n\n🍁 | Group:- ${name}\n🆔 | TID:- ${groupId}\n☣️ | Event:- The Group Needs Approval`,
-        uid,
-        async () => {
-          await api.removeUserFromGroup(api.getCurrentUserID(), groupId);
-        }
-      );
+      // Notify the admin and the specified TIDs
+      const notificationMessage = `====== Approval Required ======\n\n🍁 | Group: ${groupName}\n🆔 | TID: ${groupId}\n☣️ | Event: Group requires approval.`;
+
+      // Notify the admin (UID)
+      await api.sendMessage(notificationMessage, adminUid);
+
+      // Notify the additional thread IDs (TIDs)
+      for (const tid of notifyTids) {
+        await api.sendMessage(notificationMessage, tid);
+      }
+
+      // Remove Anchestor bot from the group
+      await api.removeUserFromGroup(api.getCurrentUserID(), groupId);
     }
   }
 };
