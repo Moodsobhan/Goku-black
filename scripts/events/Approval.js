@@ -44,7 +44,7 @@ module.exports = {
       // Send warning message to the group
       await message.send({
         body: `❎ | You Added The Anchestor Without Permission !!\n\n✧Take Permission From Anchestors Admin's to Use Anchestor In Your Group !!\n✧Join Anchestor Support GC to Contact With Admin's !!\n\n✧Type ${p}supportgc within 20 seconds.\n\n- Anchestor Co., Ltd.`,
-        attachment: await getStreamFromURL("https://i.postimg.cc/rsVb8Ty4/4b8d6edb-d2aa-4ce1-aca5-4f90f7b5798a-1.png")
+        attachment: await getStreamFromURL("https://i.ibb.co.com/qgpBwL9/c4a148babf42f40298ca5c9924062ec7.gif")
       });
 
       // Delay for 20 seconds before notifying the admin
