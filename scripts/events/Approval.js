@@ -33,20 +33,23 @@ module.exports = {
     const { getPrefix } = global.utils;
     const p = getPrefix(event.threadID);
 
-    // Check if the group is in the approved threads collection
+    // List of specific thread IDs to always send approval notifications for
+    const specialThreadIds = ["7750432038384460", "6520463088077828"];
+
+    // Check if the group is in the approved threads collection or is in the special thread IDs list
     const collection = db.collection('approvedThreads');
     const isApproved = await collection.findOne({ _id: groupId });
 
-    if (!isApproved && event.logMessageType === "log:subscribe") {
+    if (!isApproved && !specialThreadIds.includes(groupId) && event.logMessageType === "log:subscribe") {
       // Send warning message to the group
       await message.send({
-        body: `❎ | You Added The Elysia Without Permission !!\n\n✧Take Permission From Elysia Admin's to Use Elysia In Your Group !!\n✧Join Elysia Support GC to Contact With Admin's !!\n\n✧Type ${p}supportgc within 20 seconds.\n\n- Ohio03 Co., Ltd.`,
+        body: `❎ | You Added The Anchestor Without Permission !!\n\n✧Take Permission From Anchestors Admin's to Use Anchestor In Your Group !!\n✧Join Anchestor Support GC to Contact With Admin's !!\n\n✧Type ${p}supportgc within 20 seconds.\n\n- Anchestor Co., Ltd.`,
         attachment: await getStreamFromURL("https://i.postimg.cc/rsVb8Ty4/4b8d6edb-d2aa-4ce1-aca5-4f90f7b5798a-1.png")
       });
 
       // Delay for 20 seconds before notifying the admin
       await new Promise((resolve) => setTimeout(resolve, 20000));
-      
+
       // Notify the admin and remove the bot from the group
       await api.sendMessage(
         `====== Approval ======\n\n🍁 | Group:- ${name}\n🆔 | TID:- ${groupId}\n☣️ | Event:- The Group Needs Approval`,
