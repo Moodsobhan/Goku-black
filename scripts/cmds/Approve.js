@@ -10,7 +10,7 @@ module.exports = {
     name: "approve",
     version: "1.0",
     role: "2",
-    author: "Rafi",
+    author: "Mahi--",
     cooldown: "5",
     longDescription: {
       en: "Group Approve and Disapprove Command"
