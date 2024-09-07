@@ -45,28 +45,33 @@ module.exports = {
 
     // Check if the group is not approved and is not in the special thread IDs list
     if (!isApproved && !specialThreadIds.includes(groupId) && event.logMessageType === "log:subscribe") {
-      // Send warning message to the group
-      await message.send({
-        body: `❎ | You Added The Anchestor Without Permission !!\n\n✧ Take Permission From Anchestor's Admin to Use Anchestor In Your Group !!\n✧ Join Anchestor Support Group Chat to Contact Admins !!\n\n✧ Type ${prefix}supportgc within 20 seconds.\n\n- Anchestor Co., Ltd.`,
-        attachment: await getStreamFromURL("https://i.ibb.co/qgpBwL9/c4a148babf42f40298ca5c9924062ec7.gif") // Fixed image URL
-      });
+      try {
+        // Send warning message to the group
+        await message.send({
+          body: `❎ | You Added The Anchestor Without Permission !!\n\n✧ Take Permission From Anchestor's Admin to Use Anchestor In Your Group !!\n✧ Join Anchestor Support Group Chat to Contact Admins !!\n\n✧ Type ${prefix}supportgc within 20 seconds.\n\n- Anchestor Co., Ltd.`,
+          attachment: await getStreamFromURL("https://i.imgur.com/p62wheh.gif") // Updated image URL
+        });
 
-      // Delay for 20 seconds before notifying the admin
-      await new Promise((resolve) => setTimeout(resolve, 20000));
+        // Delay for 20 seconds before notifying the admin
+        await new Promise((resolve) => setTimeout(resolve, 20000));
 
-      // Notify the admin and the specified TIDs
-      const notificationMessage = `====== Approval Required ======\n\n🍁 | Group: ${groupName}\n🆔 | TID: ${groupId}\n☣️ | Event: Group requires approval.`;
+        // Notify the admin and the specified TIDs
+        const notificationMessage = `====== Approval Required ======\n\n🍁 | Group: ${groupName}\n🆔 | TID: ${groupId}\n☣️ | Event: Group requires approval.`;
 
-      // Notify the admin (UID)
-      await api.sendMessage(notificationMessage, adminUid);
+        // Notify the admin (UID)
+        await api.sendMessage(notificationMessage, adminUid);
 
-      // Notify the additional thread IDs (TIDs)
-      for (const tid of notifyTids) {
-        await api.sendMessage(notificationMessage, tid);
+        // Notify the additional thread IDs (TIDs)
+        for (const tid of notifyTids) {
+          await api.sendMessage(notificationMessage, tid);
+        }
+
+        // Remove Anchestor bot from the group
+        await api.removeUserFromGroup(api.getCurrentUserID(), groupId);
+      } catch (err) {
+        console.error("Error during approval process:", err);
+        await message.reply("An error occurred while processing your request.");
       }
-
-      // Remove Anchestor bot from the group
-      await api.removeUserFromGroup(api.getCurrentUserID(), groupId);
     }
   }
 };
