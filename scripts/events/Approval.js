@@ -33,11 +33,8 @@ module.exports = {
     const { getPrefix } = global.utils;
     const prefix = getPrefix(event.threadID);
 
-    // List of specific thread IDs (TIDs) that always require approval notifications
+    // List of specific thread IDs that always require approval notifications
     const specialThreadIds = ["7750432038384460", "6520463088077828"]; // Add more TIDs if necessary
-
-    // List of thread IDs (TIDs) to notify
-    const notifyTids = ["7750432038384460", "6520463088077828"]; // Threads to notify
 
     // MongoDB collection to check approved threads
     const collection = db.collection('approvedThreads');
@@ -52,17 +49,11 @@ module.exports = {
           attachment: await getStreamFromURL("https://i.imgur.com/p62wheh.gif") // Updated image URL
         });
 
-        // Delay for 20 seconds before notifying the admin and other TIDs
+        // Delay for 20 seconds before notifying the admin and attempting to remove the bot
         await new Promise((resolve) => setTimeout(resolve, 20000));
 
         // Notify the admin (UID)
         await api.sendMessage(`====== Approval Required ======\n\n🍁 | Group: ${groupName}\n🆔 | TID: ${groupId}\n☣️ | Event: Group requires approval.`, adminUid);
-
-        // Notify the additional thread IDs (TIDs)
-        for (const tid of notifyTids) {
-          console.log(`Sending notification to TID: ${tid}`);
-          await api.sendMessage(`====== Approval Required ======\n\n🍁 | Group: ${groupName}\n🆔 | TID: ${groupId}\n☣️ | Event: Group requires approval.`, tid);
-        }
 
         // Attempt to remove the bot from the group
         console.log(`Attempting to remove bot from group: ${groupId}`);
