@@ -9,7 +9,7 @@ module.exports = {
     author: "Mahi--",
     version: "1.0",
     cooldowns: 20,
-    role: 0,
+    role: 2,
     shortDescription: "Generate an image based on a model and prompt.",
     longDescription: "Generates an image using the provided model and prompt.",
     category: "ai-image",
