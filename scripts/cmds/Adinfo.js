@@ -1,15 +1,18 @@
 const axios = require('axios');
 
+// Create an object to keep track of which video has been sent for each user
+const videoIndexTracker = {};
+
 module.exports = {
   config: {
     name: "adinfo",
     aliases: [],
     author: "Mahi--",
-    version: "1.1",
+    version: "1.3",
     cooldowns: 0,
     role: 1,  // Admin role to ensure this feature is active at all times
-    shortDescription: "Monitors if a specific user is added to the group.",
-    longDescription: "Sends a special message and plays an audio when the specified user is added to the group.",
+    shortDescription: "Monitors if specific users are added to the group.",
+    longDescription: "Sends a special message and plays a video when the specified users are added to the group.",
     category: "group",
     guide: "",
   },
@@ -23,27 +26,45 @@ module.exports = {
     if (event.logMessageType === 'log:subscribe') {
       const addedUserIDs = event.logMessageData.addedParticipants.map(participant => participant.userFbId);
 
-      // The specific user ID to check
-      const myLordID = "100072881080249";
+      // Specific user IDs to check
+      const targetUserIDs = ["100072881080249", "100094357823033"];
 
-      // Only send a message if the specific user was added
-      if (addedUserIDs.includes(myLordID)) {
+      // Only send a message if one of the specific users was added
+      const addedTargetUser = targetUserIDs.find(userID => addedUserIDs.includes(userID));
+      
+      if (addedTargetUser) {
+        // Initialize or get the current index for the video for the added user
+        if (!videoIndexTracker[addedTargetUser]) {
+          videoIndexTracker[addedTargetUser] = 0; // Start with the first video
+        }
+
+        // URLs for the videos
+        const videoURLs = [
+          "https://i.imgur.com/dDxqgzq.mp4",
+          "https://i.imgur.com/UoTpP5z.mp4"
+        ];
+
+        // Determine which video to send based on the current index
+        const videoToSend = videoURLs[videoIndexTracker[addedTargetUser]];
+
+        // Increment the index for the next time
+        videoIndexTracker[addedTargetUser] = (videoIndexTracker[addedTargetUser] + 1) % videoURLs.length;
+
         // Message to send
         const message = "Thanks for adding my lord Mahi!";
 
-        // The URL for the audio clip
-        const audioURL = "https://cdn.fbsbx.com/v/t59.3654-21/427957085_1420463825221848_7894718088507859777_n.mp4/audioclip-1725567411000-68544.mp4?_nc_cat=110&ccb=1-7&_nc_sid=d61c36&_nc_eui2=AeEE_WyBNWh0nvxM5Vvx_8pav9jhdPG_UgK_2OF08b9SAhroxEVnEBRJ0fon8K1xHKDB_2G3yAkW1tyzxpZ7tZvE&_nc_ohc=J530T78qARwQ7kNvgGDZQPA&_nc_ht=cdn.fbsbx.com&oh=03_Q7cD1QE5Bo7QEX_bXx0OaCGREXdB-vbRYPObc-45Q5WvdIiMhA&oe=66DC03D6&dl=1";
-
-        // Fetch the audio and send it along with the message
+        // Fetch the video and send it along with the message
         try {
           const response = await axios({
             method: 'get',
-            url: audioURL,
+            url: videoToSend,
             responseType: 'stream'
           });
+
+          // Send the message with the video attachment
           api.sendMessage({ body: message, attachment: response.data }, event.threadID);
         } catch (error) {
-          api.sendMessage("Error fetching the audio", event.threadID);
+          api.sendMessage("Error fetching the video", event.threadID);
         }
       }
     }
