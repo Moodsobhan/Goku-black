@@ -1,58 +1,43 @@
-const a = require('axios');
-const tinyurl = require('tinyurl');
-const baseApiUrl = async () => {
-  const base = await a.get(
-    `https://raw.githubusercontent.com/Blankid018/D1PT0/main/baseApiUrl.json`,
-  );
-  return base.data.api;
-};
+const axios = require("axios");
 
 module.exports = {
-	config: {
-		name: "upscaleai",
-		aliases: ["4k", "upscale"],
-		version: "1.0",
-		author: "JARiF||Romim",
-		countDown: 15,
-		role: 0,
-		longDescription: "Upscale your image.",
-		category: "utility",
-		guide: {
-			en: "{pn} reply to an image"
-		}
-	},
+  config: {
+    name: "4k",
+    aliases: ["upscale"],
+    version: "1.1",
+    role: 0,
+    author: "Team_Calyx | Fahim_Noob",
+    countDown: 5,
+    longDescription: "Upscale images to 4K resolution.",
+    category: "image",
+    guide: {
+      en: "${pn} reply to an image to upscale it to 4K resolution."
+    }
+  },
+  onStart: async function ({ message, event }) {
+    if (!event.messageReply || !event.messageReply.attachments || !event.messageReply.attachments[0]) {
+      return message.reply("Please reply to an image to upscale it.");
+    }
+    const imgurl = encodeURIComponent(event.messageReply.attachments[0].url);
+    const noobs = 'xyz';
+    const upscaleUrl = `https://smfahim.${noobs}/4k?url=${imgurl}`;
+    
+    message.reply("🔄| Processing... Please wait a moment.", async (err, info) => {
+      try {
+        const { data: { image } } = await axios.get(upscaleUrl);
+        const attachment = await global.utils.getStreamFromURL(image, "upscaled-image.png");
 
-	onStart: async  ({ message, args, event, api }) => {
-		let imageUrl;
+        message.reply({
+          body: "✅| Here is your 4K upscaled image:",
+          attachment: attachment
+        });
+        let processingMsgID = info.messageID;
+        message.unsend(processingMsgID);
 
-		if (event.type === "message_reply") {
-			const replyAttachment = event.messageReply.attachments[0];
-
-			if (["photo", "sticker"].includes(replyAttachment?.type)) {
-				imageUrl = replyAttachment.url;
-			} else {
-				return api.sendMessage(
-					{ body: "❌ | Reply must be an image." },
-					event.threadID,event.messageID
-				);
-			}
-		} else if (args[0]?.match(/(https?:\/\/.*\.(?:png|jpg|jpeg))/g)) {
-			imageUrl = args[0];
-		} else {
-			return api.sendMessage({ body: "❌ | Reply to an image." }, event.threadID,event.messageID);
-		}
-
-		try {
-			const url = await tinyurl.shorten(imageUrl);
-			const k = await a.get(`${await baseApiUrl()}/4k?imageUrl=${url}`);
-
-			message.reply("✅ | Please wait...");
-
-			const resultUrl = k.data.dipto;
-
-			message.reply({ body: "✅ | Image Upscaled.", attachment: (await a.get(resultUrl,{responseType: 'stream'})).data });
-		} catch (error) {
-			message.reply("❌ | Error: " + error.message);
-		}
-	}
+      } catch (error) {
+        console.error(error);
+        message.reply("❌| There was an error upscaling your image.");
+      }
+    });
+  }
 };
