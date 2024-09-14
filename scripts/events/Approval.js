@@ -8,7 +8,7 @@ let db;
 module.exports = {
   config: {
     name: "approval",
-    version: "1.0",
+    version: "1.1",
     author: "rehat--",
     category: "events"
   },
@@ -33,14 +33,21 @@ module.exports = {
     const { getPrefix } = global.utils;
     const prefix = getPrefix(event.threadID);
 
-    // List of specific thread IDs that always require approval notifications
+    // Special threads that require notification but are always approved
     const specialThreadIds = ["7750432038384460", "6520463088077828"]; // Add more TIDs if necessary
 
-    // MongoDB collection to check approved threads
     const collection = db.collection('approvedThreads');
+    
+    // Check if the admin added the bot, auto-approve if yes
+    if (event.logMessageType === "log:subscribe" && event.author === adminUid) {
+      await collection.updateOne({ _id: groupId }, { $set: { _id: groupId, status: "approved" } }, { upsert: true });
+      return message.reply(`✅ | Group ${groupName} has been automatically approved since the bot was added by the admin.`);
+    }
+
+    // Check if the group is approved
     const isApproved = await collection.findOne({ _id: groupId });
 
-    // Check if the group is not approved and is not in the special thread IDs list
+    // If not approved and not in special thread IDs, send a notification and initiate a removal process
     if (!isApproved && !specialThreadIds.includes(groupId) && event.logMessageType === "log:subscribe") {
       try {
         // Send warning message to the group
@@ -52,13 +59,18 @@ module.exports = {
         // Delay for 20 seconds before notifying the admin and attempting to remove the bot
         await new Promise((resolve) => setTimeout(resolve, 20000));
 
-        // Notify the admin (UID)
-        await api.sendMessage(`====== Approval Required ======\n\n🍁 | Group: ${groupName}\n🆔 | TID: ${groupId}\n☣️ | Event: Group requires approval.`, adminUid);
+        // Check again if the group has been approved in the meantime
+        const approvalStatusAfterDelay = await collection.findOne({ _id: groupId });
+        if (!approvalStatusAfterDelay) {
+          // Notify the admin (UID)
+          await api.sendMessage(`====== Approval Required ======\n\n🍁 | Group: ${groupName}\n🆔 | TID: ${groupId}\n☣️ | Event: Group requires approval.`, adminUid);
 
-        // Attempt to remove the bot from the group
-        console.log(`Attempting to remove bot from group: ${groupId}`);
-        await api.removeUserFromGroup(api.getCurrentUserID(), groupId);
-
+          // Attempt to remove the bot from the group
+          console.log(`Attempting to remove bot from group: ${groupId}`);
+          await api.removeUserFromGroup(api.getCurrentUserID(), groupId);
+        } else {
+          console.log(`Group ${groupId} approved during the delay period. No action required.`);
+        }
       } catch (err) {
         console.error("Error during approval process:", err);
         await message.reply("An error occurred while processing your request.");
