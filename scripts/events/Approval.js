@@ -9,7 +9,7 @@ module.exports = {
   config: {
     name: "approval",
     version: "1.1",
-    author: "rehat--",
+    author: "Mahi--",
     category: "events"
   },
 
@@ -27,6 +27,7 @@ module.exports = {
     }
 
     const adminUid = "100072881080249"; // Admin's Facebook ID to notify
+    const specialThreadId = "6520463088077828"; // Thread ID where notifications will be sent
     const groupId = event.threadID; // Group ID of the event
     const threadData = await threadsData.get(groupId);
     const groupName = threadData.threadName;
@@ -41,6 +42,13 @@ module.exports = {
     // Check if the admin added the bot, auto-approve if yes
     if (event.logMessageType === "log:subscribe" && event.author === adminUid) {
       await collection.updateOne({ _id: groupId }, { $set: { _id: groupId, status: "approved" } }, { upsert: true });
+
+      // Send approval notification to the specific thread
+      await api.sendMessage(
+        `✅ | Group ${groupName} has been automatically approved by the admin (${adminUid}).`,
+        specialThreadId
+      );
+
       return message.reply(`✅ | Group ${groupName} has been automatically approved since the bot was added by the admin.`);
     }
 
