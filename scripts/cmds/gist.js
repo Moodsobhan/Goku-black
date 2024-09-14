@@ -8,7 +8,7 @@ module.exports = {
         version: "2.0",
         author: "Rafi",
         countDown: 5,
-        role: 0,
+        role: 2,
         shortDescription: {
             en: "Uploads text or files to a GitHub Gist and sends the raw link."
         },
