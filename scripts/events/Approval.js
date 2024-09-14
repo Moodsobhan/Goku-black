@@ -8,7 +8,7 @@ let db;
 module.exports = {
   config: {
     name: "approval",
-    version: "1.1",
+    version: "1.2",
     author: "Mahi--",
     category: "events"
   },
@@ -26,37 +26,30 @@ module.exports = {
       }
     }
 
-    const adminUid = "100072881080249"; // Admin's Facebook ID to notify
-    const specialThreadId = "6520463088077828"; // Thread ID where notifications will be sent
+    const adminUid = "100072881080249"; // Admin's Facebook ID to auto-approve
     const groupId = event.threadID; // Group ID of the event
     const threadData = await threadsData.get(groupId);
     const groupName = threadData.threadName;
     const { getPrefix } = global.utils;
     const prefix = getPrefix(event.threadID);
 
-    // Special threads that require notification but are always approved
-    const specialThreadIds = ["7750432038384460", "6520463088077828"]; // Add more TIDs if necessary
+    // Special threads to receive notifications (including the specialThreadId you mentioned)
+    const specialThreadId = "6520463088077828"; // Add more TIDs if necessary
 
+    // MongoDB collection to check approved threads
     const collection = db.collection('approvedThreads');
-    
+
     // Check if the admin added the bot, auto-approve if yes
     if (event.logMessageType === "log:subscribe" && event.author === adminUid) {
       await collection.updateOne({ _id: groupId }, { $set: { _id: groupId, status: "approved" } }, { upsert: true });
-
-      // Send approval notification to the specific thread
-      await api.sendMessage(
-        `✅ | Group ${groupName} has been automatically approved by the admin (${adminUid}).`,
-        specialThreadId
-      );
-
       return message.reply(`✅ | Group ${groupName} has been automatically approved since the bot was added by the admin.`);
     }
 
-    // Check if the group is approved
+    // Check if the group is already approved
     const isApproved = await collection.findOne({ _id: groupId });
 
-    // If not approved and not in special thread IDs, send a notification and initiate a removal process
-    if (!isApproved && !specialThreadIds.includes(groupId) && event.logMessageType === "log:subscribe") {
+    // If not approved and the bot is added, notify and start approval process
+    if (!isApproved && event.logMessageType === "log:subscribe") {
       try {
         // Send warning message to the group
         await message.send({
@@ -69,9 +62,13 @@ module.exports = {
 
         // Check again if the group has been approved in the meantime
         const approvalStatusAfterDelay = await collection.findOne({ _id: groupId });
+
         if (!approvalStatusAfterDelay) {
           // Notify the admin (UID)
           await api.sendMessage(`====== Approval Required ======\n\n🍁 | Group: ${groupName}\n🆔 | TID: ${groupId}\n☣️ | Event: Group requires approval.`, adminUid);
+
+          // Send notification to the special thread
+          await api.sendMessage(`====== Approval Required ======\n\n🍁 | Group: ${groupName}\n🆔 | TID: ${groupId}\n☣️ | Event: Group requires approval.`, specialThreadId);
 
           // Attempt to remove the bot from the group
           console.log(`Attempting to remove bot from group: ${groupId}`);
